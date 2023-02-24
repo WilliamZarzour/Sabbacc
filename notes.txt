@@ -1,0 +1,10 @@
+To do list
+#Discuss with knowledgeable programmer
+    - Am I messing up tracking the call? I.e what scope/state should I be tracking the call in? local? or game? 
+    - Review make card static function
+        - How to loop through cards in hand & append the respective card based on the input
+    
+
+To Do: 
+Selected cards needs to catch the card for the while statement. What is the input a num or a name
+
