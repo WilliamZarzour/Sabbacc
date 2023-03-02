@@ -102,16 +102,19 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         #function not required but good update
         pass
 
-    def sum_hand(hand):
+    def sum_hand(self, player):
         ''' Calculates the value of cards in a players hand'''
-        individual_hand_value = []
-        for card in hand:
-            individual_hand_value.append(card.value)
-        total_hand_value = sum(individual_hand_value)
+        hand_value = sum(card.value for card in player.hand)
+        print(f"hand value is {hand_value}")
+        return hand_value
 
-    def check_player_status():
+    def check_player_status(self, player):
         '''check if the player has burned'''
-        pass
+        hand_value = self.sum_hand(player)
+        if hand_value>=21:
+            print(f"Burned.")
+        else:
+            print(f"Not burned")
     
     def sudden_demise(self,tied_players):
         '''Tiebreaker game function. Conducts a 1v1'''
@@ -156,7 +159,6 @@ Enter corresponding integer here: """).strip()
                 player.raise_the_stakes(self.current_round_call, self)
                 self.participating_players.append(player)
 
-#write a check balance function
     def check_bet_balance(self,current_round_call):
         '''A function that checks to see if all players meet the call amount. If they don't it prompts them to balance. Returns True when balanced'''
         flag = False
@@ -198,11 +200,11 @@ Enter corresponding integer here: """).strip()
                 player_choice = input(f"Invalid Entry. {player.name} you must enter an integer that corresponds to one of the options. Integer's: 1, 2, 3 \nWhat would you like to do:\n1. Hit/Draw \n2. Trade a Card \n3. Stand").strip()
             if player_choice == "1":
                 self.hit(player)
-                #check if player has burned
+                self.check_player_status(player)
             if player_choice == "2": 
                 card_traded = player.select_card_from_hand()
                 player.trade_into_deck(card_traded)
-                #check if player has burned
+                self.check_player_status(player)
             if player_choice == "3": 
                 print(f"{player.name} you have decided to Stand. Your turn is over.")
 

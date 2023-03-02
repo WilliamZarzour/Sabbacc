@@ -49,23 +49,21 @@ class Player:
 
 
     def see_hand(self):
-        '''prints the cards in their hand'''
-        print("These are the cards in your hand:")
-        for card in self.hand:
-            print(card.name)
+        '''creates a list of str that contain the names of cards in your hand'''
+        list_of_card_names = [card.name for card in self.hand]
+        print(f"These are the cards in your hand:{list_of_card_names}")
+        return list_of_card_names
     
     def select_card_from_hand(self):
         '''A function that allows a player to select a single card from their hand'''
         
-        self.see_hand()
+        list_of_cards_in_hand = self.see_hand()
         selected_card = input(f"Select a Card from your hand:").strip().lower()
+        while selected_card not in list_of_cards_in_hand:
+            selected_card = input(f"You have not made a valid selection. Please type the name of the card you wish to select: ").strip()#.lower()
         
-        for card in self.hand:
-            if card.name != selected_card:
-                selected_card = input(f"You have not made a valid selection. Please type the name of the card you wish to select: ").strip().lower()
-            else:
-                print(f"You have selected {selected_card} from your hand")
-                return selected_card
+        print(f"You have selected {selected_card} from your hand")
+        return selected_card
 
 
     def make_card_static(self): #only works for 2 card hands need to loop through hand inside the print statement and if statements for multi sized hands
