@@ -1,12 +1,23 @@
 To do list
-#Discuss with knowledgeable programmer
-    - Am I messing up tracking the call? I.e what scope/state should I be tracking the call in? local? or game? 
+#Discuss with knowledgeable programmer 
     - Review make card static function
         - How to loop through cards in hand & append the respective card based on the input
     
 
 To Do: 
+#Trade has a bug
 
-Select cards only works if the input is exactly alike. that means find a way to format the generation of the list to match .strip.lower inputs so that user inputs dont need to be hyperspecific
 
 
+#how to automate testing
+i = 0
+test_inputs=["10", "no"]
+
+def get_input(prompt=""):
+    ''''''
+    global i
+    if i < len(test_inputs):
+        output = test_inputs[i]
+        i+=1
+        return output
+    return input(prompt)

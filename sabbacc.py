@@ -6,7 +6,7 @@
 
 import pyCardDeck
 from player import Player
-import random
+import random as rand
 import math
 
 class SabbaccGame:
@@ -18,6 +18,7 @@ class SabbaccGame:
         self.round_pot = 0
         self.sabbacc_pot = 0
         self.current_round_call = 0
+        #self.blind = 10
           
     def introduction(self):
         print(f'''
@@ -39,10 +40,10 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         self.deal()
         self.current_round_call = initial_round_call
         self.betting_phase(self.current_round_call)
-        self.sabbacc_shift()
         self.players_turns()
+        self.sabbacc_shift()
         #self.players play
-        #determine winner
+        self.determine_winner()
         # Play another round? 
 
         
@@ -58,15 +59,6 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         '''Determines the winner of the round.'''
         round_winners = []
         return round_winners
-
-    def find_sabbacc_winner(self,round_winners):
-        '''Determines the winner of the round.'''
-        #using the list of names in round winners find who appears the most and place them as the winner
-        '''times_won = 0
-        for player.name in self.players:
-            for player in round_winners:
-                round_winners.count(player)'''
-        pass
 
     def hit(self, player):
         '''Adds a card to the player's hand and prints the drawn card.'''
@@ -101,31 +93,53 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         '''Increases the minimum raise/bet to accelerate gameplay'''
         #function not required but good update
         pass
-
-    def sum_hand(self, player):
-        ''' Calculates the value of cards in a players hand'''
-        hand_value = sum(card.value for card in player.hand)
-        print(f"hand value is {hand_value}")
-        return hand_value
-
-    def check_player_status(self, player):
-        '''check if the player has burned'''
-        hand_value = self.sum_hand(player)
-        if hand_value>=21:
-            print(f"Burned.")
-        else:
-            print(f"Not burned")
     
-    def sudden_demise(self,tied_players):
-        '''Tiebreaker game function. Conducts a 1v1'''
-        for player in tied_players:
-            player.hit()
+    def determine_winner(self):
+        '''Determine winner'''
+        winners = []
+        smallest_target_delta = 99
+        for player in self.players:
+            player.sum_hand()
+            player_delta = player.get_target_delta()
+            if player_delta < smallest_target_delta:
+                winners=[player]
+                smallest_target_delta = player_delta
+            elif player_delta == smallest_target_delta:
+                winners.append(player)
+
+        if len(winners)>1:
+            winners=self.tiebreaker(winners)
         
+        winner = winners[0]
+
+        winner.rounds_won += 1
+        print(f"{winner.name} has won this round!")
+
+    def check_burn_status(self, player):
+        '''check if the player has burned
+        Returns True if a player has burned and False if they are not Burned
+        '''
+        hand_value = player.sum_hand()
+        if hand_value>23:
+            print(f"Burned.")#pay $ into main pot
+            return True
+        print(f"Not burned") #pay $ into main pot
+        return False
+    
+    def tiebreaker(self,tied_players):
+        '''Tiebreaker game function. Conducts a 1v1 
+       # war 1v1 (negative cards)
+        '''
+        num_tied_players = len(tied_players)
+        winning_number = rand.randint(1,num_tied_players)
+        print(f"Rolling dice with {num_tied_players} sides")
+        return [tied_players[winning_number-1]]
+
         #each player tied draws 1 extra card
         #player with the best modified hand wins
         #players that bombout do not pay but also do not win. 
-        #game rules says mainpot goes to the next player who didn't bomb out I think this needs balencing
-        pass
+        #game rules says mainpot goes to the next player who didn't bomb out
+    
 
     def gambling_decision(self,player,current_round_call):
         '''A function that provides the players with the corresponding gambling action. These actions are: All-in, Fold, Call, Raise'''
@@ -195,6 +209,8 @@ Enter corresponding integer here: """).strip()
     def players_turns(self):
         '''A Function that initiates the player's turn. Each player can decide to draw a card. Trade a card or Stand.'''
         for player in self.participating_players:
+            print(f"{player.name} your turn has begun.")
+            player.make_card_static()
             player_choice = input(f"{player.name} your turn has begun. What would you like to do:\n1. Hit/Draw \n2. Trade a Card \n3. Stand\n").strip()
             while player_choice not in ["1","2","3"]:
                 player_choice = input(f"Invalid Entry. {player.name} you must enter an integer that corresponds to one of the options. Integer's: 1, 2, 3 \nWhat would you like to do:\n1. Hit/Draw \n2. Trade a Card \n3. Stand").strip()
@@ -206,5 +222,5 @@ Enter corresponding integer here: """).strip()
                 player.trade_into_deck(card_traded)
                 self.check_player_status(player)
             if player_choice == "3": 
-                print(f"{player.name} you have decided to Stand. Your turn is over.")
-
+                print(f"{player.name} you have decided to Stand.")
+            print("Your turn is over")
