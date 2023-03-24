@@ -42,7 +42,6 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         self.betting_phase(self.current_round_call)
         self.players_turns()
         self.sabbacc_shift()
-        #self.players play
         self.determine_winner()
         # Play another round? 
 
@@ -96,9 +95,14 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
     
     def determine_winner(self):
         '''Determine winner'''
+        num_participating_players = self.check_participating_players()
+        if num_participating_players==0:
+            print("No participating players. No winners. Money lost to the pot")
+            return
+
         winners = []
         smallest_target_delta = 99
-        for player in self.players:
+        for player in self.participating_players:
             player.sum_hand()
             player_delta = player.get_target_delta()
             if player_delta < smallest_target_delta:
@@ -135,8 +139,13 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         winning_number = rand.randint(1,num_tied_players)
         print(f"Rolling dice with {num_tied_players} sides")
         return [tied_players[winning_number-1]]
-
     
+    def check_participating_players(self):
+        num_participating_players=len(self.participating_players)
+        if num_participating_players==0:
+            return 0
+        return num_participating_players
+
 
     def gambling_decision(self,player,current_round_call):
         '''A function that provides the players with the corresponding gambling action. These actions are: All-in, Fold, Call, Raise'''
@@ -173,6 +182,11 @@ Enter corresponding integer here: """).strip()
     def check_bet_balance(self,current_round_call):
         '''A function that checks to see if all players meet the call amount. If they don't it prompts them to balance. Returns True when balanced'''
         flag = False
+        num_participating_players = self.check_participating_players()
+        if num_participating_players==0:
+            print("no players participating. bets balanced")
+            flag=True
+
         while flag == False:
             for player in self.participating_players:
                 if player.player_round_bet < self.current_round_call:
@@ -205,6 +219,10 @@ Enter corresponding integer here: """).strip()
 
     def players_turns(self):
         '''A Function that initiates the player's turn. Each player can decide to draw a card. Trade a card or Stand.'''
+        if self.check_participating_players==0:
+            print("No players participating. Continue to next hand")
+
+
         for player in self.participating_players:
             print(f"{player.name} your turn has begun.")
             player.make_card_static()
@@ -213,7 +231,7 @@ Enter corresponding integer here: """).strip()
                 player_choice = input(f"Invalid Entry. {player.name} you must enter an integer that corresponds to one of the options. Integer's: 1, 2, 3 \nWhat would you like to do:\n1. Hit/Draw \n2. Trade a Card \n3. Stand").strip()
             if player_choice == "1":
                 self.hit(player)
-                self.check_player_status(player)
+                self.check_burn_status(player)
             if player_choice == "2": 
                 card_traded = player.select_card_from_hand()
                 player.trade_into_deck(self.deck,card_traded)
