@@ -127,18 +127,15 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         return False
     
     def tiebreaker(self,tied_players):
-        '''Tiebreaker game function. Conducts a 1v1 
-       # war 1v1 (negative cards)
+        '''Tiebreaker game function. Conducts a 1v1
+
+        temp function is a random winner - loser doesnt bomb out
         '''
         num_tied_players = len(tied_players)
         winning_number = rand.randint(1,num_tied_players)
         print(f"Rolling dice with {num_tied_players} sides")
         return [tied_players[winning_number-1]]
 
-        #each player tied draws 1 extra card
-        #player with the best modified hand wins
-        #players that bombout do not pay but also do not win. 
-        #game rules says mainpot goes to the next player who didn't bomb out
     
 
     def gambling_decision(self,player,current_round_call):
@@ -195,8 +192,8 @@ Enter corresponding integer here: """).strip()
 
     def sabbacc_shift(self):#prob need to pass the deck into the shift
         '''A function that rolls dice to see if a Sabbacc Shift Occurs Trade in Cards'''
-        dice_1 = 2#random.randint(1,6)
-        dice_2 = 2#random.randint(1,6)
+        dice_1 = 3#rand.randint(1,6)
+        dice_2 = 3#rand.randint(1,6)
         if dice_1 == dice_2:
             print(f"A Sabbacc Shift has ocurred. All cards not placed in the static zone will be replaced with cards from the deck.")
             for player in self.participating_players:
@@ -219,8 +216,8 @@ Enter corresponding integer here: """).strip()
                 self.check_player_status(player)
             if player_choice == "2": 
                 card_traded = player.select_card_from_hand()
-                player.trade_into_deck(card_traded)
-                self.check_player_status(player)
+                player.trade_into_deck(self.deck,card_traded)
+                self.check_burn_status(player)
             if player_choice == "3": 
                 print(f"{player.name} you have decided to Stand.")
             print("Your turn is over")

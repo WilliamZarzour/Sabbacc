@@ -67,14 +67,16 @@ class Player:
         
     def select_card_from_hand(self):
         '''A function that allows a player to select a single card from their hand'''
+        list_of_card_names= self.see_hand()
+        list_of_card_names = [card_name.lower() for card_name in list_of_card_names]
+        selected_card_name = input(f"Please type the name of the card you wish to select: ").strip().lower()
+        while selected_card_name not in list_of_card_names:
+            selected_card_name = input("You have not made a valid selection. Please type the name of the card you wish to select: ").strip().lower()
         
-        list_of_cards_in_hand = self.see_hand()
-        selected_card = input(f"Select a Card from your hand:").strip().lower()
-        while selected_card not in list_of_cards_in_hand:
-            selected_card = input(f"You have not made a valid selection. Please type the name of the card you wish to select: ").strip()#.lower()
-        
-        print(f"You have selected {selected_card} from your hand")
-        return selected_card
+        for card in self.hand:
+            if card.name.strip().lower()==selected_card_name:
+                print(f"You have selected {card.name} from your hand")
+        return card
 
     def make_card_static(self): 
         '''A function that allows a player to protect 1 card from being swapped (randomly changed) by placing it inside the static field'''
@@ -97,7 +99,7 @@ class Player:
 
     def trade_into_deck(self,deck,card):
         '''A function that takes 1 card and trades it for a card in the deck'''
-        #self.hand.add_to_deck
         self.hand.remove(card)
         self.hand.append(deck.draw_random())
-        pass
+        self.see_hand()
+
