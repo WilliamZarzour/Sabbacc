@@ -1,3 +1,11 @@
+#File Name: player.py
+#Description: file for player functions
+#Date: 2021-01-05
+#Author: William
+# game based on: http://sabacc.sourceforge.net/rules
+
+
+
 class Player:
     def __init__(self, name):
         self.hand = []
@@ -52,7 +60,7 @@ class Player:
     def see_hand(self):
         '''creates a list of str that contain the names of cards in your hand'''
         list_of_card_names = [card.name for card in self.hand]
-        print(f"These are the cards in your hand:{list_of_card_names}")
+        print(f"These are the cards in {self.name}'s hand:{list_of_card_names}")
         return list_of_card_names
     
     def sum_hand(self):
@@ -76,6 +84,7 @@ class Player:
         for card in self.hand:
             if card.name.strip().lower()==selected_card_name:
                 print(f"You have selected {card.name} from your hand")
+                break
         return card
 
     def make_card_static(self): 
@@ -92,14 +101,17 @@ class Player:
     
     def remove_static_card(self):
         '''A function that removes 1 card from the static field. Allowing the card to be swapped during a sabbacc Shift'''
-        for card in self.static_zone:
-            self.hand.append(card)
-            self.static_zone.remove(card)
-        print(f"Static Zone has been cleared. {card.name} has been returned to hand.")
+        self.static_zone = []
+        print(f"Static Zone has been cleared.")
 
     def trade_into_deck(self,deck,card):
         '''A function that takes 1 card and trades it for a card in the deck'''
+        index = self.hand.index(card)
         self.hand.remove(card)
-        self.hand.append(deck.draw_random())
-        self.see_hand()
+        self.hand.insert(index,deck.draw_random())
+    
+    def check_bank_balance(self):
+        print(f"{self.name} has a bank balance of {self.bank_balance}")
+
+
 

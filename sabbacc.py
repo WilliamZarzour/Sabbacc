@@ -1,19 +1,18 @@
-#File Name: main.py
-#Description: Sabbacc
+#File Name: sabbacc.py
+#Description: file for main functionality of the game
 #Date: 2021-01-05
 #Author: William
 # game based on: http://sabacc.sourceforge.net/rules
 
-import pyCardDeck
-from player import Player
+from player import *
 import random as rand
-import math
 
 class SabbaccGame:
     def __init__(self,players,deck):
         self.deck= deck
         self.players = players
         self.participating_players = []
+        self.burned_players = []
         self.scores = 0
         self.round_pot = 0
         self.sabbacc_pot = 0
@@ -22,6 +21,7 @@ class SabbaccGame:
           
     def introduction(self):
         print(f'''
+              
 Welcome to the Sabbacc Table.
 Sabbacc is a gambling game played in Star Wars.
 The goal of the game is to get a score of 23 or -23. Using combinations of of cards from the 76 Card deck.
@@ -32,6 +32,7 @@ Players will be forced to play minimum 5 rounds as the first 4 rounds are for po
 Players can buy into a round by placing a minimum amount of $$ into the pot. (this minimum increases over time)
 If a with a hand outside of the constraints of the game (-23:23) bombs out and must pay the value of the main pot to the sabbacc pot.
 Use the Sabbacc Help CMD for info on the rules / deck / or Cards
+                           
 ''')
 
     def play_sabbacc(self,initial_round_call):
@@ -43,8 +44,6 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         self.players_turns()
         self.sabbacc_shift()
         self.determine_winner()
-        # Play another round? 
-
         
     def deal(self):
         '''Dealing 2 cards per player'''
@@ -65,7 +64,6 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         player.hand.append(drawn_card)
         print(f"Drew the {drawn_card}.")
     
-
     def buy_in_phase(self):
         '''Initiates the pot building phase for those who want to bet money'''
         #This function works but will likely need to write a minimum bet before player buyins and player raises to ensure people dont just keep raising 1$
@@ -77,7 +75,7 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         self.sabbacc_pot = minimum_round_bet*len(self.players)
         print(f"Each player's initial buy-in values were: {player_buyins}. Resulting in an average minimum buy-in of: {minimum_round_bet}. The total Sabbacc pot is now: {self.sabbacc_pot}")
         for player in self.players:
-            player.bank_balance - minimum_round_bet 
+            player.bank_balance -= minimum_round_bet 
         return minimum_round_bet
 
     def betting_phase(self,current_round_call):
@@ -86,11 +84,11 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
             self.gambling_decision(player,current_round_call)
             print(f"The total Sabbacc pot is: {self.sabbacc_pot}\nThe total main pot is: {self.round_pot}\n")
         print(f"Checking to see if the bets are balanced. ")
-        self.check_bet_balance(current_round_call)
+        self.check_bet_balance()
 
-    def increase_blind_bet():
+    def increase_blind_bet(self):
         '''Increases the minimum raise/bet to accelerate gameplay'''
-        #function not required but good update
+        self.current_round_call *= 1.5
         pass
     
     def determine_winner(self):
@@ -125,9 +123,11 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         '''
         hand_value = player.sum_hand()
         if hand_value>23:
-            print(f"Burned.")#pay $ into main pot
+            print(f"Burned.")
+            self.participating_players.remove(player)
+            self.burned_players.append(player)
             return True
-        print(f"Not burned") #pay $ into main pot
+        print(f"Not burned")
         return False
     
     def tiebreaker(self,tied_players):
@@ -136,8 +136,8 @@ Use the Sabbacc Help CMD for info on the rules / deck / or Cards
         temp function is a random winner - loser doesnt bomb out
         '''
         num_tied_players = len(tied_players)
-        winning_number = rand.randint(1,num_tied_players)
         print(f"Rolling dice with {num_tied_players} sides")
+        winning_number = rand.randint(1,num_tied_players)
         return [tied_players[winning_number-1]]
     
     def check_participating_players(self):
@@ -179,7 +179,7 @@ Enter corresponding integer here: """).strip()
                 player.raise_the_stakes(self.current_round_call, self)
                 self.participating_players.append(player)
 
-    def check_bet_balance(self,current_round_call):
+    def check_bet_balance(self):
         '''A function that checks to see if all players meet the call amount. If they don't it prompts them to balance. Returns True when balanced'''
         flag = False
         num_participating_players = self.check_participating_players()
@@ -212,16 +212,19 @@ Enter corresponding integer here: """).strip()
             print(f"A Sabbacc Shift has ocurred. All cards not placed in the static zone will be replaced with cards from the deck.")
             for player in self.participating_players:
                 for card in player.hand:
-                    player.trade_into_deck(self.deck,card)
-                player.remove_static_card
+                    if card in player.static_zone:
+                        player.remove_static_card
+                        print(f"{card.name} is no longer in the static zone.")
+                    else:
+                        player.trade_into_deck(self.deck,card)
+                self.check_burn_status(player)
         else:
             print(f"A Sabbacc Shift has not ocurred, the cards in the static zone have returned to your hand.")
 
     def players_turns(self):
         '''A Function that initiates the player's turn. Each player can decide to draw a card. Trade a card or Stand.'''
-        if self.check_participating_players==0:
+        if self.check_participating_players()==0:
             print("No players participating. Continue to next hand")
-
 
         for player in self.participating_players:
             print(f"{player.name} your turn has begun.")
@@ -239,3 +242,9 @@ Enter corresponding integer here: """).strip()
             if player_choice == "3": 
                 print(f"{player.name} you have decided to Stand.")
             print("Your turn is over")
+
+    def player_balances(self):
+        '''Checks all player bank balances'''
+        for player in self.participating_players: 
+            player.check_bank_balance()
+        
